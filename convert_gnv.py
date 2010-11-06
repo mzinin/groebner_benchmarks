@@ -125,17 +125,33 @@ def make_mcl_file(filename, vars_and_set):
     output.write(mcl_string1 + mcl_string2 + mcl_string3);
     output.close();
 
+def make_target_file(target, filename, vars_and_set):
+    if (target == "sgl"):
+        make_sgl_file(filename, vars_and_set);
+    elif (target == "coc"):
+        make_coc_file(filename, vars_and_set);
+    elif (target == "mpl"):
+        make_maple_file(filename, vars_and_set);
+    elif (target == "dat"):
+        make_dat_file(filename, vars_and_set);
+    elif (target == "math"):
+        make_math_file(filename, vars_and_set);
+    elif (target == "plbr"):
+        make_plbr_file(filename, vars_and_set);
+    elif (target == "mcl"):
+        make_mcl_file(filename, vars_and_set);
+
 def main():
+    admissible = ["sgl", "coc", "mpl", "dat", "math", "plbr", "mcl"];
+    targets = [];
     if (len(sys.argv) < 2):
-#        print "Too less arguments. Abort."
-#        return
-        target = "mcl";
-    else:
-        target = sys.argv[1]
-    admissible = ["sgl", "coc", "mpl", "dat", "math", "plbr", "mcl"]
-    if (target not in admissible):
-        print "Target is unknown. Abort."
-        return
+        targets = ["mcl"];
+
+    for i in range(1, len(sys.argv)):
+        if sys.argv[i] in admissible:
+            targets.append(sys.argv[i]);
+        else:
+            print "Unknown target format: '%s', ignoring it." % sys.argv[i];
 
     all_files = os.listdir(os.getcwd());
     for filename in all_files:
@@ -146,20 +162,8 @@ def main():
         fn.close()
         example_name = filename[:-4];
 
-        if (target == "sgl"):
-            make_sgl_file(example_name, data)
-        elif (target == "coc"):
-            make_coc_file(example_name, data)
-        elif (target == "mpl"):
-            make_maple_file(example_name, data)
-        elif (target == "dat"):
-            make_dat_file(example_name, data)
-        elif (target == "math"):
-            make_math_file(example_name, data)
-        elif (target == "plbr"):
-            make_plbr_file(example_name, data)
-        elif (target == "mcl"):
-            make_mcl_file(example_name, data)
+        for target in targets:
+            make_target_file(target, example_name, data);
 
 if __name__ == "__main__":
     main();
