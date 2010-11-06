@@ -1,0 +1,155 @@
+c ****************************************************************
+c **     This is a Sat-2003 Competition *SHUFFLED* instance     **
+c ****************************************************************
+c N.B. This header has been added to the file after the competition
+c Please do contact L. Simon for more informations (simon@lri.fr)
+c 
+c Bench submitted by: Rachel Bevan (McGill University, Montreal, CA)
+c              email: rachel@mcb.mcgill.ca
+c 
+c The original name of this formula was: 
+c    handmade/bevan/cnf/marg2x4.cnf
+c Category : HandMade
+c The name used during the competition was: 
+c     handmade/set103/sat03-1442.cnf
+c The random seed used to shuffle this instance  was: 719243997
+c 
+c CPU time of solvers on this bench during the first stage 
+c  (including Hors-Concours solvers):
+c   +------------+--------+--------+
+c   | Solver     | Time   | Answer |
+c   +------------+--------+--------+
+c   | lsat       |   0.00 |  UNSAT |
+c   | marchsp    |   0.00 |  UNSAT |
+c   | marchtt    |   0.00 |  UNSAT |
+c   | berkmin561 |   0.02 |  UNSAT |
+c   | tts        |   0.02 |  UNSAT |
+c   | forklift   |   0.03 |  UNSAT |
+c   | oepir      |   0.03 |  UNSAT |
+c   | siege      |   0.03 |  UNSAT |
+c   | kcnfs      |   0.04 |  UNSAT |
+c   | zchaff     |   0.04 |  UNSAT |
+c   | sato       |   0.05 |  UNSAT |
+c   | xqingting  |   0.05 |  UNSAT |
+c   | satnik     |   0.06 |  UNSAT |
+c   | limmat     |   0.07 |  UNSAT |
+c   | funex      |   0.08 |  UNSAT |
+c   | jerusat1a  |   0.10 |  UNSAT |
+c   | jerusat1b  |   0.10 |  UNSAT |
+c   | satzoo0    |   0.12 |  UNSAT |
+c   | bmsat      |   0.17 |  UNSAT |
+c   | satzoo1    |   0.20 |  UNSAT |
+c   | satzilla   |   0.26 |  UNSAT |
+c   | jerusat1c  |   0.47 |  UNSAT |
+c   | berkmin62  |   0.51 |  UNSAT |
+c   | jquest2    |   0.85 |  UNSAT |
+c   | opensat    |   3.92 |  UNSAT |
+c   | satzilla2  |  30.38 |  UNSAT |
+c   | farseer    | 676.09 |  UNSAT |
+c   | amvo       | 900.00 |   --   |
+c   | compsat    | 900.00 |   --   |
+c   | marchxq    | 900.00 |   --   |
+c   | qingting   | 900.00 |   --   |
+c   | saturn     | 900.00 |   --   |
+c   | unitwalk   | 900.00 |   --   |
+c   +------------+--------+--------+
+c
+c Old header begins here:
+c The random seed used to shuffle this instance was seed=719243997
+p cnf 28 96
+-22 26 9 -24 0
+-4 2 -28 12 0
+24 22 26 9 0
+16 -9 23 0
+-28 12 4 -2 0
+-4 28 -12 2 0
+6 -17 25 -13 0
+21 10 27 0
+1 -6 10 0
+-16 23 9 0
+-20 -14 -3 19 0
+-3 7 26 12 0
+28 4 -12 -2 0
+6 -17 -25 13 0
+20 14 3 -19 0
+18 -19 25 -24 0
+-7 3 26 12 0
+14 -11 -4 17 0
+-3 14 19 20 0
+17 -13 -6 25 0
+-27 -15 20 0
+28 8 -5 0
+-18 23 5 0
+19 -18 -25 24 0
+-26 9 22 -24 0
+-13 -2 -21 22 0
+11 -15 16 0
+16 15 -11 0
+-5 18 23 0
+3 -26 12 7 0
+-22 24 -9 26 0
+-28 2 4 -12 0
+18 -24 -25 19 0
+11 4 14 17 0
+-14 -19 -20 3 0
+3 14 19 -20 0
+4 -11 14 -17 0
+-1 10 6 0
+-6 13 -17 25 0
+-12 -3 26 -7 0
+3 -12 7 26 0
+5 18 -23 0
+16 -23 9 0
+1 -8 7 0
+2 -21 13 22 0
+-4 28 12 -2 0
+17 -4 11 -14 0
+-11 -4 -17 -14 0
+-9 -24 22 26 0
+-28 -5 -8 0
+10 -21 -27 0
+20 -14 -3 -19 0
+6 1 -10 0
+24 25 -19 -18 0
+17 -6 13 -25 0
+-22 21 -2 -13 0
+-2 -28 -4 -12 0
+19 -14 20 3 0
+13 -2 21 22 0
+-11 17 -14 4 0
+-16 -15 -11 0
+11 -17 -4 14 0
+-1 -10 -6 0
+12 -3 -7 -26 0
+-7 -1 -8 0
+-15 -20 27 0
+-9 -22 -24 -26 0
+-19 -18 -24 -25 0
+3 -12 -7 -26 0
+7 -3 -26 -12 0
+2 21 -22 13 0
+-18 19 -24 25 0
+8 5 -28 0
+17 25 6 13 0
+19 24 25 18 0
+24 -22 9 -26 0
+-5 -23 -18 0
+-13 22 21 2 0
+-20 -27 15 0
+-27 21 -10 0
+15 20 27 0
+-14 -17 11 4 0
+-9 -16 -23 0
+-13 -22 2 -21 0
+-25 -13 -17 -6 0
+-16 15 11 0
+-25 17 -13 6 0
+-3 -19 -20 14 0
+7 -1 8 0
+27 -10 -21 0
+-21 13 -2 -22 0
+22 -9 24 -26 0
+24 -25 18 -19 0
+1 -7 8 0
+2 28 4 12 0
+-8 5 28 0
