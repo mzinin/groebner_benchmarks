@@ -462,12 +462,9 @@ def make_macaulay_file(filename):
 
     newfilename = filename.split(".")[0] + ".mcl";
     variables = vars_and_set[0].split(",");
-    additional_polys = "";
-    for var in variables:
-        additional_polys += var + "^2+" + var + ",";
     mcl_string1 = """loadPackage "BooleanGB";\nR = ZZ/2[""" + vars_and_set[0] + ", MonomialOrder => GRevLex];\n";
-    mcl_string2 = "QR = R/ideal(" + additional_polys[:-1] + ");\n";
-    mcl_string3 = "I = ideal(" + vars_and_set[1][1:] + ");\n" + "time gbBoolean I;";
+    mcl_string2 = "J = apply(gens R, x -> x^2+x);\nQR = R/J;\n"
+    mcl_string3 = "I = ideal(" + vars_and_set[1][1:] + ");\ntime C = gb I;\ntime B = gbBoolean I;\nassert(sort gens C - sort gens B == 0);";
     output = open(newfilename, "w");
     output.write(mcl_string1 + mcl_string2 + mcl_string3);
     output.close();
