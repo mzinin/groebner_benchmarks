@@ -122,6 +122,41 @@ def make_mcl_file(filename, vars_and_set):
     output.write(mcl_string1 + mcl_string2 + mcl_string3);
     output.close();
 
+def make_reduce_bibasis_file(filename):
+    f = open(filename, "r");
+    vars_and_set = f.read().split(";");
+    f.close();
+
+    newfilename = filename.split(".")[0] + "_bibasis.rdc";
+    variables = vars_and_set[0].split(",");
+    rdc_string1 = """load_package "bibasis"$\n""";
+    rdc_string2 = "vars := {" + vars_and_set[0] + "}$\n";
+    rdc_string3 = "polys := {" + string.replace(vars_and_set[1][1:], ",", ",\n") + "}$\n";
+    rdc_string4 = "bibasis(polys, vars, degrevlex, t);\nbibasis_print_statistics();\nquit;\n";
+    output = open(newfilename, "w");
+    output.write(rdc_string1 + rdc_string2 + rdc_string3 + rdc_string4);
+    output.close();
+
+def make_reduce_groebner_file(filename):
+    f = open(filename, "r");
+    vars_and_set = f.read().split(";");
+    f.close();
+
+    newfilename = filename.split(".")[0] + "_groebner.rdc";
+    variables = vars_and_set[0].split(",");
+    additional_polys = "";
+    for var in variables:
+        additional_polys += var + "**2+" + var + ",";
+        
+    variables = vars_and_set[0].split(",");
+    rdc_string1 = """load_package "groebner"$\non modular$\nsetmod 2$\non time$\n""";
+    rdc_string2 = "torder({" + vars_and_set[0] + "}, revgradlex)$\n";
+    rdc_string3 = "groebner({" + string.replace(additional_polys + vars_and_set[1][1:], ",", ",\n") + "});\n"
+    rdc_string4 = "quit;\n";
+    output = open(newfilename, "w");
+    output.write(rdc_string1 + rdc_string2 + rdc_string3 + rdc_string4);
+    output.close();
+    
 def make_target_file(target, filename, vars_and_set):
     if (target == "sgl"):
         make_sgl_file(filename, vars_and_set);
@@ -137,9 +172,13 @@ def make_target_file(target, filename, vars_and_set):
         make_plbr_file(filename, vars_and_set);
     elif (target == "mcl"):
         make_mcl_file(filename, vars_and_set);
+    elif (target == "rdc_bibasis"):
+        make_reduce_bibasis_file(filename, vars_and_set);
+    elif (target == "rdc_groebner"):
+        make_reduce_groebner_file(filename, vars_and_set);
 
 def main():
-    admissible = ["sgl", "coc", "mpl", "dat", "math", "plbr", "mcl"];
+    admissible = ["sgl", "coc", "mpl", "dat", "math", "plbr", "mcl", "rdc_bibasis", "rdc_groebner"];
     targets = [];
     if (len(sys.argv) < 2):
         targets = ["mcl"];

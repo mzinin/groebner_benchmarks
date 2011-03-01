@@ -469,6 +469,41 @@ def make_macaulay_file(filename):
     output.write(mcl_string1 + mcl_string2 + mcl_string3);
     output.close();
 
+def make_reduce_bibasis_file(filename):
+    f = open(filename, "r");
+    vars_and_set = f.read().split(";");
+    f.close();
+
+    newfilename = filename.split(".")[0] + "_bibasis.rdc";
+    variables = vars_and_set[0].split(",");
+    rdc_string1 = """load_package "bibasis"$\n""";
+    rdc_string2 = "vars := {" + vars_and_set[0] + "}$\n";
+    rdc_string3 = "polys := {" + string.replace(vars_and_set[1][1:], ",", ",\n") + "}$\n";
+    rdc_string4 = "bibasis(polys, vars, degrevlex, t);\nbibasis_print_statistics();\nquit;\n";
+    output = open(newfilename, "w");
+    output.write(rdc_string1 + rdc_string2 + rdc_string3 + rdc_string4);
+    output.close();
+
+def make_reduce_groebner_file(filename):
+    f = open(filename, "r");
+    vars_and_set = f.read().split(";");
+    f.close();
+
+    newfilename = filename.split(".")[0] + "_groebner.rdc";
+    variables = vars_and_set[0].split(",");
+    additional_polys = "";
+    for var in variables:
+        additional_polys += var + "**2+" + var + ",";
+        
+    variables = vars_and_set[0].split(",");
+    rdc_string1 = """load_package "groebner"$\non modular$\nsetmod 2$\non time$\n""";
+    rdc_string2 = "torder({" + vars_and_set[0] + "}, revgradlex)$\n";
+    rdc_string3 = "groebner({" + string.replace(additional_polys + vars_and_set[1][1:], ",", ",\n") + "});\n"
+    rdc_string4 = "quit;\n";
+    output = open(newfilename, "w");
+    output.write(rdc_string1 + rdc_string2 + rdc_string3 + rdc_string4);
+    output.close();
+
 def func(name):
     if (name == "cyclic"):
         return cyclic;
@@ -493,7 +528,7 @@ def usage(script_name):
     print "   benchmark   = cyclic|eco|katsura|life|noon|redcyc|redeco - name of benchmark,";
     print "   start       - integer >= 2, first benchmark in generating series,";
     print "   end         - integer >= start, last benchmark in generating series,";
-    print "   application = gnv|sgl|coc|mpl|dat|math|plbr|mcl - software package the benchmarks will be generated for.";
+    print "   application = gnv|sgl|coc|mpl|dat|math|plbr|mcl|rdc_bibasis|rdc_groebner - software package the benchmarks will be generated for.";
     print "Example: " + script_name + " life 6 15 gnv mpl sgl";
 
 def main():
@@ -508,7 +543,7 @@ def main():
         n_begin = 2;
     n_end = int(sys.argv[3]);
 
-    admissible = ["gnv", "sgl", "coc", "mpl", "dat", "math", "plbr", "mcl"];
+    admissible = ["gnv", "sgl", "coc", "mpl", "dat", "math", "plbr", "mcl", "rdc_bibasis", "rdc_groebner"];
     needed = [];
     for i in range(3, l):
         if sys.argv[i] in admissible:
@@ -530,6 +565,10 @@ def main():
             make_polybori_file(fn);
         if ("mcl" in needed):
             make_macaulay_file(fn);
+        if ("rdc_bibasis" in needed):
+            make_reduce_bibasis_file(fn);
+        if ("rdc_groebner" in needed):
+            make_reduce_groebner_file(fn);
         if ("gnv" not in needed):
             os.remove(fn);
 
