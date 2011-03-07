@@ -111,15 +111,33 @@ def make_plbr_file(filename, vars_and_set):
     output = open(newfilename, "w");
     output.write(plbr_string1 + plbr_string2 + "exit()");
     output.close();
-
-def make_mcl_file(filename, vars_and_set):
-    newfilename = filename + ".mcl";
+    
+def make_mcl_bibasis_file(filename, vars_and_set):
+    newfilename = filename + "_bibasis.mcl";
+    variables = vars_and_set[0].split(",");
+    mcl_string1 = """loadPackage "BIBasis";\nR = ZZ/2[""" + vars_and_set[0] + ", MonomialOrder => GRevLex];\n";
+    mcl_string2 = "I = ideal(" + vars_and_set[1][1:] + ");\ntime biBasis(I);";
+    output = open(newfilename, "w");
+    output.write(mcl_string1 + mcl_string2);
+    output.close();
+    
+def make_mcl_gb_file(filename, vars_and_set):
+    newfilename = filename + "_gb.mcl";
     variables = vars_and_set[0].split(",");
     mcl_string1 = """loadPackage "BooleanGB";\nR = ZZ/2[""" + vars_and_set[0] + ", MonomialOrder => GRevLex];\n";
-    mcl_string2 = "J = apply(gens R, x -> x^2+x);\nQR = R/J;\n"
-    mcl_string3 = "I = ideal(" + vars_and_set[1][1:] + ");\ntime C = gb I;\ntime B = gbBoolean I;\nassert(sort gens C - sort gens B == 0);";
+    mcl_string2 = "J = apply(gens R, x -> x^2+x);\nQR = R/J;\n";
+    mcl_string3 = "I = ideal(" + vars_and_set[1][1:] + ");\ntime G = gb(I);\ngens(G);";
     output = open(newfilename, "w");
     output.write(mcl_string1 + mcl_string2 + mcl_string3);
+    output.close();
+
+def make_mcl_file(filename, vars_and_set):
+    newfilename = filename + "_gbboolean.mcl";
+    variables = vars_and_set[0].split(",");
+    mcl_string1 = """loadPackage "BooleanGB";\nR = ZZ/2[""" + vars_and_set[0] + ", MonomialOrder => GRevLex];\n";
+    mcl_string2 = "I = ideal(" + vars_and_set[1][1:] + ");\ntime gbBoolean(I);";
+    output = open(newfilename, "w");
+    output.write(mcl_string1 + mcl_string2);
     output.close();
 
 def make_reduce_bibasis_file(filename, vars_and_set):
@@ -162,15 +180,20 @@ def make_target_file(target, filename, vars_and_set):
         make_math_file(filename, vars_and_set);
     elif (target == "plbr"):
         make_plbr_file(filename, vars_and_set);
-    elif (target == "mcl"):
-        make_mcl_file(filename, vars_and_set);
+    elif (target == "mcl_bibasis"):
+        make_mcl_bibasis_file(filename, vars_and_set);
+    elif (target == "mcl_gb"):
+        make_mcl_gb_file(filename, vars_and_set);
+    elif (target == "mcl_gbboolean"):
+        make_mcl_gbboolean_file(filename, vars_and_set);
     elif (target == "rdc_bibasis"):
         make_reduce_bibasis_file(filename, vars_and_set);
     elif (target == "rdc_groebner"):
         make_reduce_groebner_file(filename, vars_and_set);
 
 def main():
-    admissible = ["sgl", "coc", "mpl", "dat", "math", "plbr", "mcl", "rdc_bibasis", "rdc_groebner"];
+    admissible = ["sgl", "coc", "mpl", "dat", "math", "plbr", 
+                  "mcl_bibasis", "mcl_gb", "mcl_gbboolean", "rdc_bibasis", "rdc_groebner"];
     targets = [];
     if (len(sys.argv) < 2):
         targets = ["mcl"];

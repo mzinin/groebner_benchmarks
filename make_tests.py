@@ -454,19 +454,45 @@ def make_polybori_file(filename):
     output = open(newfilename, "w");
     output.write(plbr_string1 + plbr_string2 + "exit()");
     output.close();
-
-def make_macaulay_file(filename):
+    
+def make_macaulay_bibasis_file(filename):
     f = open(filename, "r");
     vars_and_set = f.read().split(";");
     f.close();
 
-    newfilename = filename.split(".")[0] + ".mcl";
+    newfilename = filename.split(".")[0] + "_bibasis.mcl";
     variables = vars_and_set[0].split(",");
-    mcl_string1 = """loadPackage "BooleanGB";\nR = ZZ/2[""" + vars_and_set[0] + ", MonomialOrder => GRevLex];\n";
+    mcl_string1 = """loadPackage "BIBasis";\nR = ZZ/2[""" + vars_and_set[0] + ", MonomialOrder => GRevLex];\n";
+    mcl_string2 = "I = ideal(" + vars_and_set[1][1:] + ");\ntime biBasis(I);";
+    output = open(newfilename, "w");
+    output.write(mcl_string1 + mcl_string2);
+    output.close();
+    
+def make_macaulay_gb_file(filename):
+    f = open(filename, "r");
+    vars_and_set = f.read().split(";");
+    f.close();
+
+    newfilename = filename.split(".")[0] + "_gb.mcl";
+    variables = vars_and_set[0].split(",");
+    mcl_string1 = "R = ZZ/2[" + vars_and_set[0] + ", MonomialOrder => GRevLex];\n";
     mcl_string2 = "J = apply(gens R, x -> x^2+x);\nQR = R/J;\n"
-    mcl_string3 = "I = ideal(" + vars_and_set[1][1:] + ");\ntime C = gb I;\ntime B = gbBoolean I;\nassert(sort gens C - sort gens B == 0);";
+    mcl_string3 = "I = ideal(" + vars_and_set[1][1:] + ");\ntime G = gb(I);\ngens(G);";
     output = open(newfilename, "w");
     output.write(mcl_string1 + mcl_string2 + mcl_string3);
+    output.close();
+
+def make_macaulay_gbboolean_file(filename):
+    f = open(filename, "r");
+    vars_and_set = f.read().split(";");
+    f.close();
+
+    newfilename = filename.split(".")[0] + "_gbboolean.mcl";
+    variables = vars_and_set[0].split(",");
+    mcl_string1 = """loadPackage "BooleanGB";\nR = ZZ/2[""" + vars_and_set[0] + ", MonomialOrder => GRevLex];\n";
+    mcl_string2 = "I = ideal(" + vars_and_set[1][1:] + ");\ntime gbBoolean(I);";
+    output = open(newfilename, "w");
+    output.write(mcl_string1 + mcl_string2);
     output.close();
 
 def make_reduce_bibasis_file(filename):
@@ -543,7 +569,8 @@ def main():
         n_begin = 2;
     n_end = int(sys.argv[3]);
 
-    admissible = ["gnv", "sgl", "coc", "mpl", "dat", "math", "plbr", "mcl", "rdc_bibasis", "rdc_groebner"];
+    admissible = ["gnv", "sgl", "coc", "mpl", "dat", "math", "plbr", 
+                  "mcl_bibasis", "mcl_gb", "mcl_gbboolean", "rdc_bibasis", "rdc_groebner"];
     needed = [];
     for i in range(3, l):
         if sys.argv[i] in admissible:
@@ -563,8 +590,12 @@ def main():
             make_mathematica_file(fn);
         if ("plbr" in needed):
             make_polybori_file(fn);
-        if ("mcl" in needed):
-            make_macaulay_file(fn);
+        if ("mcl_bibasis" in needed):
+            make_macaulay_bibasis_file(fn);
+        if ("mcl_gb" in needed):
+            make_macaulay_gb_file(fn);
+        if ("mcl_gbboolean" in needed):
+            make_macaulay_gbboolean_file(fn);
         if ("rdc_bibasis" in needed):
             make_reduce_bibasis_file(fn);
         if ("rdc_groebner" in needed):
