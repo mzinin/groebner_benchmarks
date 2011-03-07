@@ -1,6 +1,6 @@
 #! /usr/bin/python
 
-import sys, os;
+import sys, os, string;
 
 def make_sgl_file(filename, vars_and_set):
     newfilename = filename + ".sgl";
@@ -122,12 +122,8 @@ def make_mcl_file(filename, vars_and_set):
     output.write(mcl_string1 + mcl_string2 + mcl_string3);
     output.close();
 
-def make_reduce_bibasis_file(filename):
-    f = open(filename, "r");
-    vars_and_set = f.read().split(";");
-    f.close();
-
-    newfilename = filename.split(".")[0] + "_bibasis.rdc";
+def make_reduce_bibasis_file(filename, vars_and_set):
+    newfilename = filename + "_bibasis.rdc";
     variables = vars_and_set[0].split(",");
     rdc_string1 = """load_package "bibasis"$\n""";
     rdc_string2 = "vars := {" + vars_and_set[0] + "}$\n";
@@ -137,12 +133,8 @@ def make_reduce_bibasis_file(filename):
     output.write(rdc_string1 + rdc_string2 + rdc_string3 + rdc_string4);
     output.close();
 
-def make_reduce_groebner_file(filename):
-    f = open(filename, "r");
-    vars_and_set = f.read().split(";");
-    f.close();
-
-    newfilename = filename.split(".")[0] + "_groebner.rdc";
+def make_reduce_groebner_file(filename, vars_and_set):
+    newfilename = filename + "_groebner.rdc";
     variables = vars_and_set[0].split(",");
     additional_polys = "";
     for var in variables:
