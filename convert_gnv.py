@@ -131,7 +131,7 @@ def make_mcl_gb_file(filename, vars_and_set):
     output.write(mcl_string1 + mcl_string2 + mcl_string3);
     output.close();
 
-def make_mcl_file(filename, vars_and_set):
+def make_mcl_gbboolean_file(filename, vars_and_set):
     newfilename = filename + "_gbboolean.mcl";
     variables = vars_and_set[0].split(",");
     mcl_string1 = """loadPackage "BooleanGB";\nR = ZZ/2[""" + vars_and_set[0] + ", MonomialOrder => GRevLex];\n";
