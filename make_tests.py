@@ -1,162 +1,134 @@
 #!/usr/bin/env python3
 
+import math
 import os
 import sys
 
 
 def cyclic(n):
-    alst = []
-    allnums = range(n + 1)[1:]
-    for i in allnums:
-        alst.append('x' + str(i))
-    for i in allnums:
-        alst.append('x' + str(i))
+    output_filename = 'cyclic{}.gnv'.format(n)
 
-    out = open('cyclic' + str(n) + '.gnv', 'w')
-    for i in allnums[:-1]:
-        out.write('x' + str(i) + ',')
-    out.write('x' + str(allnums[-1]) + ';\n')
+    with open(output_filename, 'w') as output:
+        allnums = range(1, n + 1)
+        alst = ['x{}'.format(i) for i in allnums]
+        alst *= 2
 
-    for i in range(n)[1:]:
-        add = ''
-        for k in range(n + 1)[1:]:
-            mul = ''
-            for j in range(i + 1)[1:]:
-                mul += alst[j + k - 2] + '*'
-            mul = mul[:-1]
-            add += mul + '+'
-        add = add[:-1]
-        out.write(add + ',')
+        output.write(','.join(['x{}'.format(i) for i in allnums]))
+        output.write(';\n')
 
-    mul = ''
-    for i in range(n + 1)[1:]:
-        mul += alst[i - 1] + '*'
-    mul = mul[:-1] + '+1'
-    out.write(mul + ';\n1;')
+        polynoms = []
 
-    return 'cyclic' + str(n) + '.gnv'
+        for i in range(n)[1:]:
+            add = ''
+            for k in range(n + 1)[1:]:
+                mul = ''
+                for j in range(i + 1)[1:]:
+                    mul += alst[j + k - 2] + '*'
+                mul = mul[:-1]
+                add += mul + '+'
+            polynoms.append(add[:-1])
+
+        mul = ''
+        for i in range(n + 1)[1:]:
+            mul += alst[i - 1] + '*'
+        polynoms.append(mul[:-1] + '+1')
+
+        output.write(','.join(polynoms))
+        output.write(';\n1;')
+
+    return output_filename
 
 
 def eco(n):
-    allnums = range(n + 1)[1:]
-    out = open('eco' + str(n) + '.gnv', 'w')
-    for i in allnums[:-1]:
-        out.write('x' + str(i) + ',')
-    out.write('x' + str(allnums[-1]) + ';\n')
+    output_filename = 'eco{}.gnv'.format(n)
 
-    vars = ['0']
-    for i in allnums:
-        vars.append('x' + str(i))
+    with open(output_filename, 'w') as output:
+        allnums = range(1, n + 1)
+        vars = ['x{}'.format(i) for i in range(n + 1)]
 
-    poly = ''
-    for i in allnums[:-1]:
-        poly += vars[i] + '+'
-    poly += '1'
-    out.write(poly + ',')
+        output.write(','.join(vars[1:]))
+        output.write(';\n')
 
-    for i in allnums[:-2]:
-        poly = vars[i] + '*' + vars[n] + '+'
-        if (i % 2 == 1):
-            poly += '1+'
-        for j in range(n - i)[1:]:
-            poly += vars[j] + '*' + vars[j + i] + '*' + vars[n] + '+'
-        poly = poly[:-1]
-        out.write(poly + ',')
+        polynoms = []
 
-    i = n - 1
-    poly = vars[i] + '*' + vars[n] + '+'
-    if (i % 2 == 1):
-        poly += '1+'
-    for j in range(n - i)[1:]:
-        poly += vars[j] + '*' + vars[j + i] + '*' + vars[n] + '+'
-    poly = poly[:-1]
-    out.write(poly + ';\n1;')
-    return 'eco' + str(n) + '.gnv'
+        polynom = '+'.join([vars[i] for i in allnums[:-1]]) + '+1'
+        polynoms.append(polynom)
+
+        for i in allnums[:-1]:
+            polynom = vars[i] + '*' + vars[n] + '+' + ('1+' if i % 2 == 1 else '')
+            polynom += '+'.join([vars[j] + '*' + vars[j + i] + '*' + vars[n] for j in range(1, n - i)])
+            if polynom[-1] == '+':
+                polynom = polynom[:-1]
+            polynoms.append(polynom)
+
+        output.write(','.join(polynoms))
+        output.write(';\n1;')
+
+    return output_filename
 
 
 def katsura(n):
-    allnums = range(n + 1)
-    out = open('kats' + str(n) + '.gnv', 'w')
-    for i in allnums[:-1]:
-        out.write('u' + str(i) + ',')
-    out.write('u' + str(allnums[-1]) + ';\n')
+    output_filename = 'kats{}.gnv'.format(n)
 
-    vars = []
-    for i in allnums:
-        vars.append('u' + str(i))
+    with open(output_filename, 'w') as output:
+        allnums = range(n + 1)
+        vars = ['u{}'.format(i) for i in range(n + 1)]
 
-    poly = ''
-    for i in allnums:
-        poly += vars[i] + '+'
-    poly += '1'
-    out.write(poly + ',')
+        output.write(','.join(vars))
+        output.write(';\n')
 
-    for i in allnums[1 : -1]:
-        poly = ''
-        present = [[0, i], [i]]
+        polynoms = []
 
-        for j in allnums[1 : n - i + 1]:
-            t = [j, i + j]
-            if t[0] == t[1]:
-                t = t[:-1]
-            t.sort()
-            if t not in present:
-                present.append(t)
+        polynom = '+'.join(vars) + '+1'
+        polynoms.append(polynom)
 
-        for j in allnums[1 : i + 1]:
-            t = [j, i - j]
-            if t[0] == t[1]:
-                t = t[:-1]
-            t.sort()
-            if t not in present:
-                present.append(t)
+        for i in allnums[1 : -1]:
+            polynom = ''
+            present = [[0, i], [i]]
 
-        for j in allnums[i + 1:]:
-            t = [j, j - i]
-            if t[0] == t[1]:
-                t = t[:-1]
-            t.sort()
-            if t not in present:
-                present.append(t)
+            for j in allnums[1 : n - i + 1]:
+                t = [j, i + j]
+                if t[0] == t[1]:
+                    t = t[:-1]
+                t.sort()
+                if t not in present:
+                    present.append(t)
 
-        for t in present:
-            if len(t) == 1:
-                poly += vars[t[0]] + '+'
-            if len(t) == 2:
-                poly += vars[t[0]] + '*' + vars[t[1]] + '+'
+            for j in allnums[1 : i + 1]:
+                t = [j, i - j]
+                if t[0] == t[1]:
+                    t = t[:-1]
+                t.sort()
+                if t not in present:
+                    present.append(t)
 
-        poly = poly[:-1] + ','
-        if i == n - 1:
-            poly = poly[:-1] + ';\n1;'
-        out.write(poly)
+            for j in allnums[i + 1:]:
+                t = [j, j - i]
+                if t[0] == t[1]:
+                    t = t[:-1]
+                t.sort()
+                if t not in present:
+                    present.append(t)
 
-    return 'kats' + str(n) + '.gnv'
+            for t in present:
+                if len(t) == 1:
+                    polynom += vars[t[0]] + '+'
+                if len(t) == 2:
+                    polynom += vars[t[0]] + '*' + vars[t[1]] + '+'
 
+            polynoms.append(polynom[:-1])
 
-def fac(i):
-    if (i == 0 or i == 1):
-        return 1
-    else:
-        res = 1
-        for t in range(i + 1)[2:]:
-            res *= t
-        return res
+        output.write(','.join(polynoms))
+        output.write(';\n1;')
 
-
-def lcopy(lst):
-    out = []
-    for i in range(len(lst)):
-        out.append(lst[i])
-    return out
+    return output_filename
 
 
 def sim_poly(k, n):
-    res = []
-    amount = int(fac(n) / fac(k) / fac(n - k))
-    next = []
-    for i in range(k):
-        next.append(i)
-    res.append(lcopy(next))
+    next = [i for i in range(k)]
+    res = [next.copy()]
+
+    amount = int(math.factorial(n) / math.factorial(k) / math.factorial(n - k))
 
     for i in range(amount - 1):
         changing = k - 1
@@ -166,483 +138,396 @@ def sim_poly(k, n):
 
         for j in range(changing + 1, k):
             next[j] = next[j - 1] + 1
-        res.append(lcopy(next))
+        res.append(next.copy())
 
-    out = ''
+    out = []
     for i in range(len(res)):
-        new = ''
-        for j in range(k):
-            new += 'x' + str(res[i][j]) + '*'
-        out += new[:-1] + '+'
-    return out[:-1]
+        new = '*'.join(['x{}'.format(res[i][j]) for j in range(k)])
+        out.append(new)
+
+    return '+'.join(out)
 
 
 def life(n):
-    out = open('life' + str(n) + '.gnv', 'w')
-    for i in range(n):
-        out.write('x' + str(i) + ',')
-    out.write('x' + str(n) + ';\n')
+    output_filename = 'life{}.gnv'.format(n)
 
-    poly = 'x' + str(n) + '+' + sim_poly(n - 2, n - 1) + '+' + sim_poly(3, n - 1)
-    sub = sim_poly(n - 2, n - 1)
-    poly += '+' + sub.replace('+', '*x' + str(n - 1) + '+') + '*x' + str(n - 1)
+    with open(output_filename, 'w') as output:
+        output.write(','.join(['x{}'.format(i) for i in range(n + 1)]))
+        output.write(';\n')
 
-    sub = sim_poly(n - 3, n - 1)
-    poly += '+' + sub.replace('+', '*x' + str(n - 1) + '+') + '*x' + str(n - 1)
+        poly = 'x' + str(n) + '+' + sim_poly(n - 2, n - 1) + '+' + sim_poly(3, n - 1)
+        sub = sim_poly(n - 2, n - 1)
+        poly += '+' + sub.replace('+', '*x' + str(n - 1) + '+') + '*x' + str(n - 1)
 
-    sub = sim_poly(3, n - 1)
-    poly += '+' + sub.replace('+', '*x' + str(n - 1) + '+') + '*x' + str(n - 1)
+        sub = sim_poly(n - 3, n - 1)
+        poly += '+' + sub.replace('+', '*x' + str(n - 1) + '+') + '*x' + str(n - 1)
 
-    sub = sim_poly(2, n - 1)
-    poly += '+' + sub.replace('+', '*x' + str(n - 1) + '+') + '*x' + str(n - 1)
+        sub = sim_poly(3, n - 1)
+        poly += '+' + sub.replace('+', '*x' + str(n - 1) + '+') + '*x' + str(n - 1)
 
-    out.write(poly + ';\n1;')
-    return 'life' + str(n) + '.gnv'
+        sub = sim_poly(2, n - 1)
+        poly += '+' + sub.replace('+', '*x' + str(n - 1) + '+') + '*x' + str(n - 1)
+
+        output.write(poly)
+        output.write(';\n1;')
+
+    return output_filename
 
 
 def noon(n):
-    allnums = range(n + 1)[1:]
-    out = open('noon' + str(n) + '.gnv', 'w')
-    for i in allnums[:-1]:
-        out.write('x' + str(i) + ',')
-    out.write('x' + str(allnums[-1]) + ';\n')
+    output_filename = 'noon{}.gnv'.format(n)
 
-    vars = ['0']
-    for i in allnums:
-        vars.append('x' + str(i))
+    with open(output_filename, 'w') as output:
+        allnums = range(1, n + 1)
+        vars = ['x{}'.format(i) for i in range(n + 1)]
 
-    for i in allnums[:-1]:
-        poly = vars[i] + '+'
-        for j in range(i)[1:]:
-            poly += vars[i] + '*' + vars[j] + '+'
-        for j in range(n + 1)[i + 1:]:
-            poly += vars[i] + '*' + vars[j] + '+'
-        poly = poly[:-1]
-        out.write(poly + ',')
+        output.write(','.join(vars[1:]))
+        output.write(';\n')
 
-    i = n
-    poly = vars[i] + '+'
-    for j in range(i)[1:]:
-        poly += vars[i] + '*' + vars[j] + '+'
-    for j in range(n + 1)[i + 1:]:
-        poly += vars[i] + '*' + vars[j] + '+'
-    poly = poly[:-1]
-    out.write(poly + ';\n')
+        polynoms = []
 
-    poly = ''
-    for i in allnums:
-        poly += vars[i] + '+'
-    poly = poly[:-1]
-    out.write(poly + ';')
-    return 'noon' + str(n) + '.gnv'
+        for i in allnums:
+            polynom = vars[i] + '+'
+            polynom += '+'.join([vars[i] + '*' + vars[j] for j in range(1, i)])
+            polynom += '+' if polynom[-1] != '+' else ''
+            polynom += '+'.join([vars[i] + '*' + vars[j] for j in range(i + 1, n + 1)])
+            if polynom[-1] == '+':
+                polynom = polynom[:-1]
+            polynoms.append(polynom)
+
+        output.write(','.join(polynoms))
+        output.write(';\n')
+
+        polynom = '+'.join([vars[i] for i in allnums])
+        output.write(polynom)
+        output.write(';')
+
+    return output_filename
 
 
 def redcyc(n):
-    args = []
-    for i in range(n + 1)[1:]:
-        args.append('x' + str(i))
-    args.append('z')
-    out = open('redcyc' + str(n) + '.gnv', 'w')
+    output_filename = 'redcyc{}.gnv'.format(n)
 
-    for i in range(n + 1)[1:]:
-        out.write('x' + str(i) + ',')
-    out.write('z;\n')
+    with open(output_filename, 'w') as output:
+        args = ['x{}'.format(i) for i in range(1, n + 1)]
+        args.append('z')
 
-    add = ''
-    for j in range(n + 1)[1:]:
-        add += args[j - 1] + '+'
-    add += '1,'
-    out.write(add)
+        output.write(','.join(args))
+        output.write(';\n')
 
-    s = args[n] + '*'
-    for i in range(n + 1)[1:]:
-        s += args[i - 1] + '*'
-    s = s[:-1] + '+1,'
-    out.write(s)
+        polynoms = []
 
-    add = args[0] + '*' + args[1] + '+' + args[0] + '+' + args[n-1] + '+'
-    for j in range(n)[2:]:
-        add += args[j - 1] + '*' + args[j] + '+'
-    add = add[:-1] + ','
-    out.write(add)
+        add = '+'.join([args[j - 1] for j in range(1, n + 1)])
+        add += '+1'
+        polynoms.append(add)
 
-    for i in range(n)[3:]:
-        s = ''
-        for j in range(i + 1)[1:]:
-            s += args[j - 1] + '*'
-        f = s[:-1] + '+'
-        s = ''
-        for j in range(i)[1:]:
-            s += args[j - 1] + '*'
-        f += s[:-1] + '+'
-        s = args[n - 1] + '*'
-        for j in range(i - 1)[1:]:
-            s += args[j - 1] + '*'
-        f += s[:-1] + '+'
-        s = args[n - 1] + '*'
-        for j in range(n)[n + 2 - i:]:
-            s += args[j - 1] + '*'
-        f += s[:-1] + ','
-        out.write(f)
+        s = '*'.join([args[i - 1] for i in range(1, n + 2)])
+        s += '+1'
+        polynoms.append(s)
 
-    i = n
-    s = ''
-    for j in range(i + 1)[1:]:
-        s += args[j - 1] + '*'
-    f = s[:-1] + '+'
+        add = args[0] + '*' + args[1] + '+' + args[0] + '+' + args[n - 1] + '+'
+        add += '+'.join([args[j - 1] + '*' + args[j] for j in range(2, n)])
+        polynoms.append(add)
 
-    s = ''
-    for j in range(i)[1:]:
-        s += args[j - 1] + '*'
-    f += s[:-1] + '+'
+        for i in range(3, n + 1):
+            s = '*'.join([args[j - 1] for j in range(1, i + 1)])
+            f = s + '+'
 
-    s = args[n - 1] + '*'
-    for j in range(i - 1)[1:]:
-        s += args[j-1] + '*'
-    f += s[:-1] + '+'
+            s = '*'.join([args[j - 1] for j in range(1, i)])
+            f += s + '+'
 
-    s = args[n - 1] + '*'
-    for j in range(n)[n + 2 - i:]:
-        s += args[j - 1] + '*'
-    f += s[:-1] + ';\n'
-    out.write(f)
+            s = args[n - 1] + '*'
+            s += '*'.join([args[j - 1] for j in range(1, i - 1)])
+            f += s + '+'
 
-    out.write('1;')
-    return 'redcyc' + str(n) + '.gnv'
+            s = args[n - 1] + '*'
+            s += '*'.join([args[j - 1] for j in range(n + 2 - i, n)])
+            f += s
+
+            polynoms.append(f)
+
+        output.write(','.join(polynoms))
+        output.write(';\n1;')
+
+    return output_filename
 
 
 def redeco(n):
-    allnums = range(n + 1)[1:]
-    out = open('redeco' + str(n) + '.gnv', 'w')
-    for i in allnums[:-1]:
-        out.write('x' + str(i) + ',')
-    out.write('x' + str(allnums[-1]) + ';\n')
+    output_filename = 'redeco{}.gnv'.format(n)
 
-    vars = ['0']
-    for i in allnums:
-        vars.append('x' + str(i))
+    with open(output_filename, 'w') as output:
+        allnums = range(1, n + 1)
+        vars = ['x{}'.format(i) for i in range(n + 1)]
 
-    poly = ''
-    for i in allnums[:-1]:
-        poly += vars[i] + '+'
-    poly += '1'
-    out.write(poly + ',')
+        output.write(','.join(vars[1:]))
+        output.write(';\n')
 
-    for i in allnums[:-2]:
-        poly = vars[i] + '+' + vars[n] + '+'
-        for j in range(n - i)[1:]:
-            poly += vars[j] + '*' + vars[j + i] + '+'
-        poly = poly[:-1]
-        out.write(poly + ',')
+        polynoms = []
 
-    i = n - 1
-    poly = vars[i] + '*' + vars[n] + '+'
-    for j in range(n - i)[1:]:
-        poly += vars[j] + '*' + vars[j + i] + '+'
-    poly = poly[:-1]
-    out.write(poly + ';\n1;')
-    return 'redeco' + str(n) + '.gnv'
+        polynom = '+'.join([vars[i] for i in allnums[:-1]])
+        polynom += '+1'
+        polynoms.append(polynom)
+
+        for i in allnums[:-1]:
+            polynom = vars[i] + ('+' if i != n - 1 else '*') + vars[n] + '+'
+            polynom += '+'.join([vars[j] + '*' + vars[j + i] for j in range(1, n - i)])
+            if polynom[-1] == '+':
+                polynom = polynom[:-1]
+            polynoms.append(polynom)
+
+        output.write(','.join(polynoms))
+        output.write(';\n1;')
+
+    return output_filename
+
+
+def read_gnv_content(filename):
+    with open(filename, 'r') as input:
+        variables, polynoms, _ = input.read().split(';', 2)
+        return variables.strip().split(','), polynoms.strip()
 
 
 def make_singular_file(filename):
-    f = open(filename, 'r')
-    vars_and_set = f.read().split(';')
-    f.close()
+    output_filename = os.path.splitext(filename)[0] + '.sgl'
 
-    newfilename = filename.split('.')[0] + '.sgl'
-    variables = vars_and_set[0].split(',')
-    additional_polys = ''
-    for var in variables:
-        additional_polys += var + '^2+' + var + ','
-    sgl_string1 = 'ring r=2,(' + vars_and_set[0] + '),dp;\n'
-    sgl_string2 = 'ideal I=' + additional_polys + vars_and_set[1][1:] + ';\n'
-    sgl_string3 = 'int t=timer;\nsystem("--ticks-per-sec",100);\noption(redSB);\nideal gb=groebner(I);\ntimer-t;\nexit;'
-    output = open(newfilename, 'w')
-    output.write(sgl_string1 + sgl_string2 + sgl_string3)
-    output.close()
+    with open(output_filename, 'w') as output:
+        variables, polynoms = read_gnv_content(filename)
+        additional_polys = ['{0}^2+{0}'.format(var) for var in variables]
+
+        output.write('ring r=2,({}),dp;\n'.format(','.join(variables)))
+        output.write('ideal I={},{};\n'.format(','.join(additional_polys), polynoms))
+        output.write('int t=timer;\n')
+        output.write('system("--ticks-per-sec",100);\n')
+        output.write('option(redSB);\n')
+        output.write('ideal gb=groebner(I);\n')
+        output.write('timer-t;\n')
+        output.write('exit;')
 
 
 def make_cocoa_file(filename):
-    f = open(filename, 'r')
-    vars_and_set = f.read().split(';')
-    f.close()
+    output_filename = os.path.splitext(filename)[0] + '.coc'
 
-    newfilename = filename.split('.')[0] + '.coc'
-    variables = vars_and_set[0].split(',')
-    analyzed_vars = {}
-    additional_polys = ''
-    for var in variables:
-        additional_polys += var + '^2+' + var + ','
-        if var.isalpha():
-            analyzed_vars[var] = []
-        else:
-            if var[:1] not in analyzed_vars:
-                analyzed_vars[var[:1]] = []
-            analyzed_vars[var[:1]].append(int(var[1:]))
+    with open(output_filename, 'w') as output:
+        variables, polynoms = read_gnv_content(filename)
+        additional_polys = ['{0}^2+{0}'.format(var) for var in variables]
 
-    coc_string1 = 'Use R::=Z/(2)['
-    for var in analyzed_vars.keys():
-        if analyzed_vars[var] == []:
-            coc_string1 += var + ','
-        else:
-            analyzed_vars[var].sort()
-            if analyzed_vars[var][-1] - analyzed_vars[var][0] + 1 == len(analyzed_vars[var]):
-                coc_string1 += var + '[' + str(analyzed_vars[var][0]) + '..' + str(analyzed_vars[var][-1]) + '],'
-    coc_string1 = coc_string1[:-1] + '];\n'
-    coc_string2 = 'I:=Ideal(' + additional_polys + vars_and_set[1][1:] + ');'
+        analyzed_vars = {}
+        for var in variables:
+            if var.isalpha():
+                analyzed_vars[var] = []
+            else:
+                if var[:1] not in analyzed_vars:
+                    analyzed_vars[var[:1]] = []
+                analyzed_vars[var[:1]].append(int(var[1:]))
 
-    for var in analyzed_vars.keys():
-        analyzed_vars[var].reverse()
-        for n in analyzed_vars[var]:
-            coc_string2 = coc_string2.replace(var + str(n), var + '[' + str(n) + ']')
-    output = open(newfilename, 'w')
-    output.write(coc_string1 + coc_string2 + 'G:=ReducedGBasis(I);\nQuit;')
-    output.close()
+        ring_vars = []
+        for var in analyzed_vars.keys():
+            if analyzed_vars[var] == []:
+                ring_vars.append(var)
+            else:
+                analyzed_vars[var].sort()
+                if analyzed_vars[var][-1] - analyzed_vars[var][0] + 1 == len(analyzed_vars[var]):
+                    ring_vars.append('{}[{}..{}]'.format(var, analyzed_vars[var][0], analyzed_vars[var][-1]))
+
+        output.write('Use R::=Z/(2)[{}];\n'.format(','.join(ring_vars)))
+
+        ideal = '{},{}'.format(','.join(additional_polys), polynoms)
+        for var in analyzed_vars.keys():
+            analyzed_vars[var].reverse()
+            for n in analyzed_vars[var]:
+                ideal = ideal.replace('{}{}'.format(var, n), '{}[{}]'.format(var, n))
+
+        output.write('I:=Ideal({});\n'.format(ideal))
+        output.write('G:=ReducedGBasis(I);\n'.format(ideal))
+        output.write('Quit;'.format(ideal))
 
 
 def make_maple_file(filename):
-    f = open(filename, 'r')
-    vars_and_set = f.read().split(';')
-    f.close()
+    output_filename = os.path.splitext(filename)[0] + '.mpl'
 
-    newfilename = filename.split('.')[0] + '.mpl'
-    variables = vars_and_set[0].split(',')
-    additional_polys = ''
-    for var in variables:
-        additional_polys += var + '^2+' + var + ','
-    maple_string1 = 'with(FGb):\nvars:=[' + vars_and_set[0] + ']:\n'
-    maple_string2 = 'polyset:=[' + additional_polys + vars_and_set[1][1:] + ']:\n'
-    maple_string3 = 'st:=time(): gb:=fgb_gbasis(polyset,2,vars,[]): time()-st;'
-    output = open(newfilename, 'w')
-    output.write(maple_string1 + maple_string2 + maple_string3)
-    output.close()
+    with open(output_filename, 'w') as output:
+        variables, polynoms = read_gnv_content(filename)
+        additional_polys = ['{0}^2+{0}'.format(var) for var in variables]
+
+        output.write('with(FGb):\n')
+        output.write('vars:=[{}]:\n'.format(','.join(variables)))
+        output.write('polyset:=[{},{}]:\n'.format(','.join(additional_polys), polynoms))
+        output.write('st:=time():\n')
+        output.write('gb:=fgb_gbasis(polyset,2,vars,[]):\n')
+        output.write('time()-st;')
 
 
 def make_dat_file(filename):
-    f = open(filename, 'r')
-    vars_and_set = f.read().split(';')
-    f.close()
+    output_filename = os.path.splitext(filename)[0] + '.dat'
 
-    newfilename = filename.split('.')[0] + '.dat'
-    variables_tmp = vars_and_set[0].split(',')
-    variables = []
-    for i in range(len(variables_tmp)):
-        variables.append('x' + str(i + 1))
+    with open(output_filename, 'w') as output:
+        variables, polynoms = read_gnv_content(filename)
 
-    number_of_variables = i + 1
-    polynoms = vars_and_set[1][1:]
-    number_of_polynoms = polynoms.count(',') + 1
-    polynoms = polynoms.replace(',', '\n')
-    for i in range(number_of_variables - 1, -1, -1):
-       polynoms = polynoms.replace(variables_tmp[i], variables[i])
-    polynoms = polynoms.replace('+', ' + ')
+        dat_variables = ['x{}'.format(i + 1) for i in range(len(variables))]
+        number_of_variables = len(dat_variables)
+        number_of_polynoms = polynoms.count(',') + 1
+        polynoms = polynoms.replace(',', '\n')
 
-    output = open(newfilename, 'w')
-    output.write(str(number_of_polynoms) + ' ' + str(number_of_variables) + '\n')
-    output.write(polynoms)
-    output.close()
+        for i in range(number_of_variables - 1, -1, -1):
+            polynoms = polynoms.replace(variables[i], dat_variables[i])
+        polynoms = polynoms.replace('+', ' + ')
+
+        output.write('{} {}\n'.format(number_of_polynoms, number_of_variables))
+        output.write(polynoms)
 
 
 def make_mathematica_file(filename):
-    f = open(filename, 'r')
-    vars_and_set = f.read().split(';')
-    f.close()
+    output_filename = os.path.splitext(filename)[0] + '.m'
 
-    newfilename = filename.split('.')[0] + '.m'
-    variables = vars_and_set[0].split(',')
-    additional_polys = ''
-    for var in variables:
-        additional_polys += var + '^2+' + var + ','
+    with open(output_filename, 'w') as output:
+        variables, polynoms = read_gnv_content(filename)
+        additional_polys = ['{0}^2+{0}'.format(var) for var in variables]
 
-    sgl_string1 = 'polys={' + additional_polys + vars_and_set[1][1:] + '};\n'
-    sgl_string2 = 'GroebnerBasis[polys,{' + vars_and_set[0] + '},Modulus->2];'
-
-    output = open(newfilename, 'w')
-    output.write(sgl_string1 + sgl_string2)
-    output.close()
+        output.write('polys={{{},{}}};\n'.format(','.join(additional_polys), polynoms))
+        output.write('GroebnerBasis[polys,{{{}}},Modulus->2];'.format(','.join(variables)))
 
 
 def make_polybori_file(filename):
-    f = open(filename, 'r')
-    vars_and_set = f.read().split(';')
-    f.close()
+    output_filename = os.path.splitext(filename)[0] + '.plbr'
 
-    newfilename = filename.split('.')[0] + '.plbr'
-    variables = vars_and_set[0].split(',')
+    with open(output_filename, 'w') as output:
+        variables, polynoms = read_gnv_content(filename)
 
-    plbr_string1 = 'change_ordering(dp_asc)\n'
-    plbr_string2 = 'groebner_basis([' + vars_and_set[1][1:] + '])\n'
+        for i in range(len(variables) - 1, -1, -1):
+            polynoms = polynoms.replace(variables[i], 'x({})'.format(i + 1))
 
-    vars = []
-    for var in variables:
-        vars.append(var)
-    vars.reverse()
-    i = len(vars)
-    for var in vars:
-        plbr_string2 = plbr_string2.replace(var, 'x(' + str(i) + ')')
-        i -= 1
-    output = open(newfilename, 'w')
-    output.write(plbr_string1 + plbr_string2 + 'exit()')
-    output.close()
+        output.write('change_ordering(dp_asc)\n')
+        output.write('groebner_basis([{}])\n'.format(polynoms))
+        output.write('exit()')
 
 
 def make_macaulay_bibasis_file(filename):
-    f = open(filename, 'r')
-    vars_and_set = f.read().split(';')
-    f.close()
+    output_filename = os.path.splitext(filename)[0] + '_bibasis.mcl'
 
-    newfilename = filename.split('.')[0] + '_bibasis.mcl'
-    variables = vars_and_set[0].split(',')
-    mcl_string1 = 'loadPackage "BIBasis";\nR = ZZ/2[' + vars_and_set[0] + ', MonomialOrder => GRevLex];\n'
-    mcl_string2 = 'I = ideal(' + vars_and_set[1][1:] + ');\ntime biBasis(I);'
-    output = open(newfilename, 'w')
-    output.write(mcl_string1 + mcl_string2)
-    output.close()
+    with open(output_filename, 'w') as output:
+        variables, polynoms = read_gnv_content(filename)
+
+        output.write('loadPackage "BIBasis";\n')
+        output.write('R = ZZ/2[{}, MonomialOrder => GRevLex];\n'.format(','.join(variables)))
+        output.write('I = ideal({});\n'.format(polynoms))
+        output.write('time biBasis(I);')
 
 
 def make_macaulay_gb_file(filename):
-    f = open(filename, 'r')
-    vars_and_set = f.read().split(';')
-    f.close()
+    output_filename = os.path.splitext(filename)[0] + '_gb.mcl'
 
-    newfilename = filename.split('.')[0] + '_gb.mcl'
-    variables = vars_and_set[0].split(',')
-    mcl_string1 = 'R = ZZ/2[' + vars_and_set[0] + ', MonomialOrder => GRevLex];\n'
-    mcl_string2 = 'J = apply(gens R, x -> x^2+x);\nQR = R/J;\n'
-    mcl_string3 = 'I = ideal(' + vars_and_set[1][1:] + ');\ntime G = gb(I);\ngens(G);'
+    with open(output_filename, 'w') as output:
+        variables, polynoms = read_gnv_content(filename)
 
-    output = open(newfilename, 'w')
-    output.write(mcl_string1 + mcl_string2 + mcl_string3)
-    output.close()
+        output.write('R = ZZ/2[{}, MonomialOrder => GRevLex];\n'.format(','.join(variables)))
+        output.write('J = apply(gens R, x -> x^2+x);\n')
+        output.write('QR = R/J;\n')
+        output.write('I = ideal({});\n'.format(polynoms))
+        output.write('time G = gb(I);\n')
+        output.write('gens(G);')
 
 
 def make_macaulay_gbboolean_file(filename):
-    f = open(filename, 'r')
-    vars_and_set = f.read().split(';')
-    f.close()
+    output_filename = os.path.splitext(filename)[0] + '_gbboolean.mcl'
 
-    newfilename = filename.split('.')[0] + '_gbboolean.mcl'
-    variables = vars_and_set[0].split(',')
-    mcl_string1 = 'loadPackage "BooleanGB";\nR = ZZ/2[' + vars_and_set[0] + ', MonomialOrder => GRevLex];\n'
-    mcl_string2 = 'I = ideal(' + vars_and_set[1][1:] + ');\ntime gbBoolean(I);'
-    output = open(newfilename, 'w')
-    output.write(mcl_string1 + mcl_string2)
-    output.close()
+    with open(output_filename, 'w') as output:
+        variables, polynoms = read_gnv_content(filename)
+
+        output.write('loadPackage "BooleanGB";\n')
+        output.write('R = ZZ/2[{}, MonomialOrder => GRevLex];\n'.format(','.join(variables)))
+        output.write('I = ideal({});\n'.format(polynoms))
+        output.write('time gbBoolean(I);')
 
 
 def make_reduce_bibasis_file(filename):
-    f = open(filename, 'r')
-    vars_and_set = f.read().split(';')
-    f.close()
+    output_filename = os.path.splitext(filename)[0] + '_bibasis.rdc'
 
-    newfilename = filename.split('.')[0] + '_bibasis.rdc'
-    variables = vars_and_set[0].split(',')
-    rdc_string1 = 'load_package "bibasis"$\n'
-    rdc_string2 = 'vars := {' + vars_and_set[0] + '}$\n'
-    rdc_string3 = 'polys := {' + vars_and_set[1][1:].replace(',', ',\n') + '}$\n'
-    rdc_string4 = 'bibasis(polys, vars, degrevlex, t);\nbibasis_print_statistics();\nquit;\n'
+    with open(output_filename, 'w') as output:
+        variables, polynoms = read_gnv_content(filename)
 
-    output = open(newfilename, 'w')
-    output.write(rdc_string1 + rdc_string2 + rdc_string3 + rdc_string4)
-    output.close()
+        output.write('load_package "bibasis"$\n')
+        output.write('vars := {{{}}}$\n'.format(','.join(variables)))
+        output.write('polys := {{{}}}$\n'.format(polynoms.replace(',', ',\n')))
+        output.write('bibasis(polys, vars, degrevlex, t);\n')
+        output.write('bibasis_print_statistics();\n')
+        output.write('quit;\n')
 
 
 def make_reduce_groebner_file(filename):
-    f = open(filename, 'r')
-    vars_and_set = f.read().split(';')
-    f.close()
+    output_filename = os.path.splitext(filename)[0] + '_groebner.rdc'
 
-    newfilename = filename.split('.')[0] + '_groebner.rdc'
-    variables = vars_and_set[0].split(',')
-    additional_polys = ''
-    for var in variables:
-        additional_polys += var + '**2+' + var + ','
+    with open(output_filename, 'w') as output:
+        variables, polynoms = read_gnv_content(filename)
+        additional_polys = ['{0}**2+{0}'.format(var) for var in variables]
 
-    variables = vars_and_set[0].split(',')
-    rdc_string1 = 'load_package "groebner"$\non modular$\nsetmod 2$\non time$\n'
-    rdc_string2 = 'torder({' + vars_and_set[0] + '}, revgradlex)$\n'
-    rdc_string3 = 'groebner({' + (additional_polys + vars_and_set[1][1:]).replace(',', ',\n') + '});\n'
-    rdc_string4 = 'quit;\n'
-
-    output = open(newfilename, 'w')
-    output.write(rdc_string1 + rdc_string2 + rdc_string3 + rdc_string4)
-    output.close()
-
-
-def func(name):
-    if (name == 'cyclic'):
-        return cyclic
-    elif (name == 'eco'):
-        return eco
-    elif (name == 'katsura'):
-        return katsura
-    elif (name == 'life'):
-        return life
-    elif (name == 'noon'):
-        return noon
-    elif (name == 'redcyc'):
-        return redcyc
-    elif (name == 'redeco'):
-        return redeco
-    else:
-        print('Unknown test: ' + name + '\n')
-        return fac
+        output.write('load_package "groebner"$\n')
+        output.write('on modular$\n')
+        output.write('setmod 2$\n')
+        output.write('on time$\n')
+        output.write('torder({{{}}}, revgradlex)$\n'.format(','.join(variables)))
+        output.write('groebner({{{},{}}});\n'.format(','.join(additional_polys), polynoms.replace(',', ',\n')))
+        output.write('quit;\n')
 
 
 def usage(script_name):
-    print('Usage: ' + script_name + ' <benchmark> <start> <end> [application]*')
-    print('   benchmark   = cyclic | eco | katsura | life | noon | redcyc | redeco - name of benchmark,')
-    print('   start       - integer >= 2, first benchmark in generated series,')
-    print('   end         - integer >= start, last benchmark in generated series,')
-    print('   application = gnv | sgl | coc | mpl | dat | math | plbr | mcl_bibasis | mcl_gb | mcl_gbboolean | rdc_bibasis | rdc_groebner - software package the benchmarks will be generated for.')
-    print('Example: ' + script_name + ' life 6 15 gnv mpl sgl')
+    print(script_name + ' generates benchmarks for computing boolean Groebner bases in various software packages.\n')
+    print('Usage: ' + script_name + ' <benchmark> <start> <end> [format]*')
+    print('   benchmark = cyclic | eco | katsura | life | noon | redcyc | redeco - name of benchmark,')
+    print('   start     - integer >= 2, first benchmark in generated series,')
+    print('   end       - integer >= start, last benchmark in generated series,')
+    print('   format    = gnv | sgl | coc | mpl | dat | math | plbr | mcl_bibasis | mcl_gb | mcl_gbboolean | rdc_bibasis | rdc_groebner' + \
+          ' - software package\'s format the benchmarks will be generated for.\n')
+    print('Example: ' + script_name + ' life 6 15 gnv mpl sgl\n')
 
 
 def main():
-    l = len(sys.argv)
-    if (l < 4):
+    if len(sys.argv) < 4:
         usage(sys.argv[0])
-        return
+        sys.exit(1)
 
-    current_test = func(sys.argv[1])
-    n_begin = int(sys.argv[2])
-    if (n_begin < 2):
-        n_begin = 2
+    benchmarks = { 'cyclic': cyclic,
+                   'eco': eco,
+                   'katsura': katsura,
+                   'life': life,
+                   'noon': noon,
+                   'redcyc': redcyc,
+                   'redeco': redeco }
+
+    formats = { 'gnv': lambda x: None,
+                'sgl': make_singular_file,
+                'coc': make_cocoa_file,
+                'mpl': make_maple_file,
+                'dat': make_dat_file,
+                'math': make_mathematica_file,
+                'plbr': make_polybori_file,
+                'mcl_bibasis': make_macaulay_bibasis_file,
+                'mcl_gb': make_macaulay_gb_file,
+                'mcl_gbboolean': make_macaulay_gbboolean_file,
+                'rdc_bibasis': make_reduce_bibasis_file,
+                'rdc_groebner': make_reduce_groebner_file }
+
+    current_benchmark = sys.argv[1]
+    if current_benchmark not in benchmarks:
+        print('Unsupported benchmark: ' + current_benchmark + '\n')
+        sys.exit(1)
+
+    n_begin = int(sys.argv[2]) if int(sys.argv[2]) >= 2 else 2
     n_end = int(sys.argv[3])
 
-    admissible = ['gnv', 'sgl', 'coc', 'mpl', 'dat', 'math', 'plbr',
-                  'mcl_bibasis', 'mcl_gb', 'mcl_gbboolean', 'rdc_bibasis', 'rdc_groebner']
-    needed = []
-    for i in range(3, l):
-        if sys.argv[i] in admissible:
-            needed.append(sys.argv[i])
+    output_formats = set()
+    for i in range(3, len(sys.argv)):
+        if sys.argv[i] in formats:
+            output_formats.add(sys.argv[i])
 
     for i in range(n_begin, n_end + 1):
-        fn = current_test(i)
-        if ('sgl' in needed):
-            make_singular_file(fn)
-        if ('coc' in needed):
-            make_cocoa_file(fn)
-        if ('mpl' in needed):
-            make_maple_file(fn)
-        if ('dat' in needed):
-            make_dat_file(fn)
-        if ('math' in needed):
-            make_mathematica_file(fn)
-        if ('plbr' in needed):
-            make_polybori_file(fn)
-        if ('mcl_bibasis' in needed):
-            make_macaulay_bibasis_file(fn)
-        if ('mcl_gb' in needed):
-            make_macaulay_gb_file(fn)
-        if ('mcl_gbboolean' in needed):
-            make_macaulay_gbboolean_file(fn)
-        if ('rdc_bibasis' in needed):
-            make_reduce_bibasis_file(fn)
-        if ('rdc_groebner' in needed):
-            make_reduce_groebner_file(fn)
-        if ('gnv' not in needed):
-            os.remove(fn)
+        gnv_file = benchmarks[current_benchmark](i)
+
+        for output_format in output_formats:
+            formats[output_format](gnv_file)
+
+        if 'gnv' not in output_formats:
+            os.remove(gnv_file)
+
 
 if __name__ == '__main__':
     main()
