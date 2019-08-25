@@ -72,6 +72,8 @@ The supported output formats are:
 * `rdc_bibasis` - script for [REDUCE](http://www.reduce-algebra.com/) to compute Gröbner basis with [BIBASIS](http://www.reduce-algebra.com/manual/contributed/bibasis.pdf) package
 * `rdc_groebner` - script for [REDUCE](http://www.reduce-algebra.com/) to compute Gröbner basis with [GROEBNER](http://www.reduce-algebra.com/manual/contributed/groebner.pdf) package
 
+For most supported series `make_tests.py` cannot add the correct answer into output GNV file. In such case the answer section will consist of just `1`.
+
 
 ## convert_gnv.py
 
